@@ -1,68 +1,72 @@
-// src/pages/Login.tsx
+// src/components/AddItemForm.tsx
 import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 
-const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+type AddItemFormProps = {
+  itemType: 'movie' | 'book' | 'videoGame'
+  setShowAddForm: (show: boolean) => void
+}
 
-  const handleLogin = async (e: React.FormEvent) => {
+const AddItemForm = ({ itemType, setShowAddForm }: AddItemFormProps) => {
+  const [title, setTitle] = useState('')
+  const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState('')
+  const [status, setStatus] = useState('not-watched')
+  const [dateInfo, setDateInfo] = useState('')
+  const [progress, setProgress] = useState(0)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validar los campos
-    if (!email || !password) {
-      setError('Por favor, ingrese todos los campos')
-      return
+    const newItem = {
+      title,
+      rating,
+      comment,
+      status,
+      user_id: supabase.auth.user()?.id,
     }
 
-    try {
-      const { user, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
-      console.log('Usuario logeado:', user)
-      // Redirigir o realizar cualquier otra acción después del login
-    } catch (error: any) {
-      setError(error.message)
+    if (itemType === 'movie') {
+      newItem['watched_on'] = dateInfo
+      await supabase.from('Movies').insert([newItem])
+    } else if (itemType === 'book') {
+      newItem['finished_on'] = dateInfo
+      await supabase.from('Books').insert([newItem])
+    } else if (itemType === 'videoGame') {
+      newItem['progress'] = progress
+      await supabase.from('VideoGames').insert([newItem])
     }
 
-    // Limpiar campos y error
-    setError('')
-    setEmail('')
-    setPassword('')
+    // Resetear el formulario
+    setTitle('')
+    setRating(0)
+    setComment('')
+    setStatus('not-watched')
+    setDateInfo('')
+    setProgress(0)
+    
+    // Ocultar el formulario después de agregar el item
+    setShowAddForm(false)
   }
 
   return (
-    <div>
-      <h2>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleLogin}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+      <input type="number" min="0" max="5" value={rating} onChange={(e) => setRating(Number(e.target.value))} required />
+      <textarea placeholder="Comment" value={comment} onChange={(e) => setComment(e.target.value)} />
+      <select value={status} onChange={(e) => setStatus(e.target.value)} required>
+        <option value="not-watched">Not Watched</option>
+        <option value="watching">Watching</option>
+        <option value="watched">Watched</option>
+      </select>
+      {itemType !== 'videoGame' ? (
+        <input type="date" value={dateInfo} onChange={(e) => setDateInfo(e.target.value)} required />
+      ) : (
+        <input type="number" value={progress} onChange={(e) => setProgress(Number(e.target.value))} placeholder="Progress" required />
+      )}
+      <button type="submit">Add {itemType}</button>
+    </form>
   )
 }
 
-export default Login
+export default AddItemForm

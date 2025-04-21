@@ -1,77 +1,161 @@
-"use client";
+// src/Dashboard.tsx
+import { useEffect, useState } from 'react'
+import { supabase } from '../services/supabaseClient'
+import Card from '../components/Card' // Importamos el componente Card
+import AddItemForm from '../components/AddItem' // Importamos el formulario de agregar
 
-import { useEffect, useState } from "react";
-import { supabase } from "../services/supabaseClient";
-import { Button } from "../components/ui/button";
-import { ContentItem } from "../types/types";
-import { useNavigate } from "react-router-dom";
+type Movie = {
+  id: string
+  title: string
+  rating: number
+  comment: string
+  watched_on: string
+  status: string
+}
 
-const Dashboard = () => {
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [content, setContent] = useState<ContentItem[]>([]);
-  const navigate = useNavigate();
+type Book = {
+  id: string
+  title: string
+  rating: number
+  comment: string
+  finished_on: string
+  status: string
+}
 
+type VideoGame = {
+  id: string
+  title: string
+  rating: number
+  comment: string
+  finished_on: string
+  progress: number
+  status: string
+}
+
+function Dashboard() {
+  const [movies, setMovies] = useState<Movie[]>([])
+  const [books, setBooks] = useState<Book[]>([])
+  const [videoGames, setVideoGames] = useState<VideoGame[]>([])
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [itemType, setItemType] = useState<'movie' | 'book' | 'videoGame'>('movie')
+
+  // Obtener datos de Movies
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+    const fetchMovies = async () => {
+      const { data, error } = await supabase
+        .from('Movies')
+        .select('*')
+        .eq('user_id', supabase.auth.user()?.id)
 
-      if (error || !user) {
-        navigate("/login"); // redirigir si no hay sesión
+      if (error) {
+        console.log('Error fetching movies:', error)
       } else {
-        setUserEmail(user.email);
-        fetchContent(user.email);
+        setMovies(data)
       }
-    };
-
-    getUser();
-  }, [navigate]);
-
-  const fetchContent = async (email: string) => {
-    const { data, error } = await supabase
-      .from("contents")
-      .select("*")
-      .eq("user_email", email);
-
-    if (error) {
-      console.error("Error al obtener contenido:", error);
-    } else {
-      setContent(data);
     }
-  };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
-  };
+    fetchMovies()
+  }, [])
+
+  // Obtener datos de Books
+  useEffect(() => {
+    const fetchBooks = async () => {
+      const { data, error } = await supabase
+        .from('Books')
+        .select('*')
+        .eq('user_id', supabase.auth.user()?.id)
+
+      if (error) {
+        console.log('Error fetching books:', error)
+      } else {
+        setBooks(data)
+      }
+    }
+
+    fetchBooks()
+  }, [])
+
+  // Obtener datos de Video Games
+  useEffect(() => {
+    const fetchVideoGames = async () => {
+      const { data, error } = await supabase
+        .from('VideoGames')
+        .select('*')
+        .eq('user_id', supabase.auth.user()?.id)
+
+      if (error) {
+        console.log('Error fetching video games:', error)
+      } else {
+        setVideoGames(data)
+      }
+    }
+
+    fetchVideoGames()
+  }, [])
+
+  // Función para cambiar el tipo de item
+  const handleItemTypeChange = (type: 'movie' | 'book' | 'videoGame') => {
+    setItemType(type)
+    setShowAddForm(true) // Mostrar el formulario cuando se elige un tipo
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <Button onClick={handleLogout}>Cerrar sesión</Button>
+    <div className="dashboard">
+      <h2>My Movies</h2>
+      <button onClick={() => handleItemTypeChange('movie')}>Add Movie</button>
+      <div className="cards-container">
+        {movies.map((movie) => (
+          <Card
+            key={movie.id}
+            title={movie.title}
+            rating={movie.rating}
+            comment={movie.comment}
+            status={movie.status}
+            extraInfo="Watched on"
+            type="movie"
+            dateInfo={movie.watched_on}
+          />
+        ))}
       </div>
 
-      <h2 className="text-lg font-semibold mb-4">Contenido de {userEmail}</h2>
+      <h2>My Books</h2>
+      <button onClick={() => handleItemTypeChange('book')}>Add Book</button>
+      <div className="cards-container">
+        {books.map((book) => (
+          <Card
+            key={book.id}
+            title={book.title}
+            rating={book.rating}
+            comment={book.comment}
+            status={book.status}
+            extraInfo="Finished on"
+            type="book"
+            dateInfo={book.finished_on}
+          />
+        ))}
+      </div>
 
-      {content.length === 0 ? (
-        <p>No hay contenido aún.</p>
-      ) : (
-        <ul className="space-y-2">
-          {content.map((item) => (
-            <li key={item.id} className="border rounded p-4 shadow">
-              <p className="font-medium">{item.title}</p>
-              <p className="text-sm text-gray-500">
-                Tipo: {item.type} | Año: {item.year}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
+      <h2>My Video Games</h2>
+      <button onClick={() => handleItemTypeChange('videoGame')}>Add Video Game</button>
+      <div className="cards-container">
+        {videoGames.map((game) => (
+          <Card
+            key={game.id}
+            title={game.title}
+            rating={game.rating}
+            comment={game.comment}
+            status={game.status}
+            extraInfo="Progress"
+            type="videoGame"
+            dateInfo={game.progress}
+          />
+        ))}
+      </div>
+
+      {/* Mostrar el formulario de agregar item si showAddForm es true */}
+      {showAddForm && <AddItemForm />}
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard
