@@ -3,22 +3,40 @@ import { supabase } from "../../services/supabaseClient"; // Asegúrate de tener
 import Card from "../Card/Card"; // Importamos el componente Card
 
 const Dashboard: React.FC = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const userId = "user-id"; // Aquí deberías obtener el userId del contexto o autenticación
 
   // Cargar datos de Supabase
   useEffect(() => {
     const fetchItems = async () => {
-      const { data, error } = await supabase
-        .from("contents")
-        .select("*")
-        .eq("user_id", userId)
-        .order("date", { ascending: false });
+      if (!userId) {
+        setError("No hay usuario autenticado.");
+        setLoading(false);
+        return;
+      }
 
-      if (error) {
+      try {
+        const { data, error } = await supabase
+          .from("contents")
+          .select("*")
+          .eq("user_id", userId)
+          .order("date", { ascending: false });
+
+        console.log("Datos cargados:", data); // Verifica la estructura de los datos
+
+        if (error) {
+          setError("Error al obtener los contenidos");
+          console.error(error);
+        } else {
+          setItems(data || []);
+        }
+      } catch (error) {
+        setError("Error al obtener los contenidos");
         console.error(error);
-      } else {
-        setItems(data || []);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -61,14 +79,22 @@ const Dashboard: React.FC = () => {
     <div className="dashboard-container">
       <h1>Dashboard</h1>
       <div className="card-container">
-        {items.map((item) => (
-          <Card
-            key={item.id}
-            {...item}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-          />
-        ))}
+        {loading ? (
+          <p>Cargando...</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : items.length > 0 ? (
+          items.map((item) => (
+            <Card
+              key={item.id}
+              {...item}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
+          ))
+        ) : (
+          <p>No tienes ítems registrados.</p>
+        )}
       </div>
     </div>
   );

@@ -14,24 +14,52 @@ interface CardProps {
   onEdit: (id: string, newData: any) => void;
 }
 
-const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, status, onDelete, onEdit }) => {
+const Card: React.FC<CardProps> = ({
+  id,
+  title,
+  type,
+  rating,
+  comment,
+  date,
+  status,
+  onDelete,
+  onEdit,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedType, setEditedType] = useState(type);
   const [editedRating, setEditedRating] = useState(rating);
   const [editedComment, setEditedComment] = useState(comment);
   const [editedDate, setEditedDate] = useState(date);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const handleSave = () => {
-    onEdit(id, {
-      title: editedTitle,
-      type: editedType,
-      rating: editedRating,
-      comment: editedComment,
-      date: editedDate,
-      status
-    });
+    // Solo actualizamos si hay cambios
+    if (
+      editedTitle !== title ||
+      editedType !== type ||
+      editedRating !== rating ||
+      editedComment !== comment ||
+      editedDate !== date
+    ) {
+      onEdit(id, {
+        title: editedTitle,
+        type: editedType,
+        rating: editedRating,
+        comment: editedComment,
+        date: editedDate,
+        status,
+      });
+    }
     setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    if (isConfirmingDelete) {
+      onDelete(id);
+    } else {
+      setIsConfirmingDelete(true);
+    }
   };
 
   return (
@@ -77,7 +105,14 @@ const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, sta
 
       <div className="icons">
         <FaEdit onClick={() => setIsEditing(!isEditing)} />
-        <FaTrash onClick={() => onDelete(id)} />
+        <FaTrash onClick={handleDelete} />
+        {isConfirmingDelete && (
+          <div className="confirmation">
+            <p>¿Estás seguro de eliminar este ítem?</p>
+            <button onClick={handleDelete}>Sí</button>
+            <button onClick={() => setIsConfirmingDelete(false)}>Cancelar</button>
+          </div>
+        )}
       </div>
     </div>
   );
