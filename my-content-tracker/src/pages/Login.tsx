@@ -1,72 +1,51 @@
-// src/components/AddItemForm.tsx
+// src/pages/Login.tsx
 import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
+import { useNavigate } from "react-router-dom"; // Cambiado a react-router-dom
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate(); // Usamos useNavigate para redirigir
 
-type AddItemFormProps = {
-  itemType: 'movie' | 'book' | 'videoGame'
-  setShowAddForm: (show: boolean) => void
-}
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-const AddItemForm = ({ itemType, setShowAddForm }: AddItemFormProps) => {
-  const [title, setTitle] = useState('')
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
-  const [status, setStatus] = useState('not-watched')
-  const [dateInfo, setDateInfo] = useState('')
-  const [progress, setProgress] = useState(0)
+    try {
+      const { user, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const newItem = {
-      title,
-      rating,
-      comment,
-      status,
-      user_id: supabase.auth.user()?.id,
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        navigate("/dashboard"); // Redirige al dashboard después del login
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
-
-    if (itemType === 'movie') {
-      newItem['watched_on'] = dateInfo
-      await supabase.from('Movies').insert([newItem])
-    } else if (itemType === 'book') {
-      newItem['finished_on'] = dateInfo
-      await supabase.from('Books').insert([newItem])
-    } else if (itemType === 'videoGame') {
-      newItem['progress'] = progress
-      await supabase.from('VideoGames').insert([newItem])
-    }
-
-    // Resetear el formulario
-    setTitle('')
-    setRating(0)
-    setComment('')
-    setStatus('not-watched')
-    setDateInfo('')
-    setProgress(0)
-    
-    // Ocultar el formulario después de agregar el item
-    setShowAddForm(false)
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-      <input type="number" min="0" max="5" value={rating} onChange={(e) => setRating(Number(e.target.value))} required />
-      <textarea placeholder="Comment" value={comment} onChange={(e) => setComment(e.target.value)} />
-      <select value={status} onChange={(e) => setStatus(e.target.value)} required>
-        <option value="not-watched">Not Watched</option>
-        <option value="watching">Watching</option>
-        <option value="watched">Watched</option>
-      </select>
-      {itemType !== 'videoGame' ? (
-        <input type="date" value={dateInfo} onChange={(e) => setDateInfo(e.target.value)} required />
-      ) : (
-        <input type="number" value={progress} onChange={(e) => setProgress(Number(e.target.value))} placeholder="Progress" required />
-      )}
-      <button type="submit">Add {itemType}</button>
-    </form>
-  )
-}
+    <div>
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+};
 
-export default AddItemForm
+export default Login;

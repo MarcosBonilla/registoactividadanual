@@ -1,21 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+// App.tsx
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+import Login from "./pages/Login";  // Asume que tienes un componente de Login
 
-function App() {
-  const [user, setUser] = useState(null);
-
+const App = () => {
   return (
-    <AuthProvider value={{ user, setUser }}>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />  {/* Ruta para Login */}
+        <Route path="/dashboard" element={<Dashboard />} />  {/* Ruta para el Dashboard */}
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
