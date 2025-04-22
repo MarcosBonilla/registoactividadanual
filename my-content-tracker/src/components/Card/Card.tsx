@@ -14,6 +14,12 @@ interface CardProps {
   onEdit: (id: string, newData: any) => void;
 }
 
+const typeIcons: Record<string, string> = {
+  Movie: "🎬",
+  Book: "📚",
+  VideoGame: "🎮",
+};
+
 const Card: React.FC<CardProps> = ({
   id,
   title,
@@ -34,7 +40,6 @@ const Card: React.FC<CardProps> = ({
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const handleSave = () => {
-    // Solo actualizamos si hay cambios
     if (
       editedTitle !== title ||
       editedType !== type ||
@@ -62,8 +67,11 @@ const Card: React.FC<CardProps> = ({
     }
   };
 
+  const icon = typeIcons[type] || "📦";
+  const typeClass = type.toLowerCase(); // Ej: "movie", "book", "videogame"
+
   return (
-    <div className="card">
+    <div className={`card ${typeClass}`}>
       {isEditing ? (
         <form onSubmit={(e) => e.preventDefault()}>
           <input
@@ -91,15 +99,15 @@ const Card: React.FC<CardProps> = ({
             value={editedDate}
             onChange={(e) => setEditedDate(e.target.value)}
           />
-          <button onClick={handleSave}>Save</button>
+          <button onClick={handleSave}>Guardar</button>
         </form>
       ) : (
         <div>
-          <h3>{title}</h3>
-          <p>{type}</p>
-          <p>{rating} ⭐</p>
-          <p>{comment}</p>
-          <p>{date}</p>
+          <h3>{icon} {title}</h3>
+          <p><strong>Tipo:</strong> {type}</p>
+          <p><strong>Rating:</strong> {rating} ⭐</p>
+          <p><strong>Comentario:</strong> {comment}</p>
+          <p><strong>Fecha:</strong> {date}</p>
         </div>
       )}
 

@@ -14,9 +14,7 @@ const DashboardPage = () => {
     const checkUser = async () => {
       try {
         // Verificar si el usuario está autenticado
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
           navigate('/');
@@ -39,7 +37,6 @@ const DashboardPage = () => {
           .order('date', { ascending: false });
 
         if (error) throw error;
-        console.log(data); // Mostrar datos para depuración
         setItems(data || []); // Guardar los ítems en el estado
       } catch (error) {
         setError('Error al obtener los contenidos');

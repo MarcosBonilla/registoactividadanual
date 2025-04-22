@@ -1,47 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { supabase } from "../../services/supabaseClient"; // Asegúrate de tener la configuración de Supabase
+// src/components/Dashboard/Dashboard.tsx
+import React, { useState } from "react";
+import { supabase } from "../../services/supabaseClient";
 import Card from "../Card/Card"; // Importamos el componente Card
 
-const Dashboard: React.FC = () => {
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+interface DashboardProps {
+  items: any[];
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ items }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const userId = "user-id"; // Aquí deberías obtener el userId del contexto o autenticación
-
-  // Cargar datos de Supabase
-  useEffect(() => {
-    const fetchItems = async () => {
-      if (!userId) {
-        setError("No hay usuario autenticado.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from("contents")
-          .select("*")
-          .eq("user_id", userId)
-          .order("date", { ascending: false });
-
-        console.log("Datos cargados:", data); // Verifica la estructura de los datos
-
-        if (error) {
-          setError("Error al obtener los contenidos");
-          console.error(error);
-        } else {
-          setItems(data || []);
-        }
-      } catch (error) {
-        setError("Error al obtener los contenidos");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchItems();
-  }, [userId]);
 
   // Eliminar ítem
   const handleDelete = async (id: string) => {
