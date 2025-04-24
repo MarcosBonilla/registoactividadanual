@@ -11,15 +11,23 @@ const Header = ({ session }: { session: any }) => {
   };
 
   return (
-    <header>
-      <h1>Mi Aplicación</h1>
+    <header className="header">
+      <div className="logo">
+        <h1>Mi Aplicación</h1>
+      </div>
+
       {session ? (
-        <button onClick={handleLogout}>Cerrar sesión</button> // Botón de logout si hay sesión
+        <nav className="nav">
+          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+          <button onClick={() => navigate("/stats")}>Estadísticas</button>
+          <button onClick={() => navigate("/recommendations")}>Recomendaciones</button>
+          <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>
+        </nav>
       ) : (
-        <>
-          <button onClick={() => navigate("/login")}>Iniciar sesión</button>  {/* Botón de login */}
-          <button onClick={() => navigate("/register")}>Registrarse</button> {/* Botón de registro */}
-        </>
+        <nav className="nav">
+          <button onClick={() => navigate("/login")}>Iniciar sesión</button>
+          <button onClick={() => navigate("/register")}>Registrarse</button>
+        </nav>
       )}
     </header>
   );

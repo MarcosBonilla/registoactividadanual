@@ -5,7 +5,7 @@ import { supabase } from "../../services/supabaseClient";
 const statusOptionsByType: Record<string, string[]> = {
   movie: ["vista", "por ver", "viendo"],
   book: ["leído", "por leer", "leyendo"],
-  videogame: ["jugado", "por jugar", "jugando"],
+  videoGame: ["jugado", "por jugar", "jugando"],
 };
 
 interface ModalEditProps {
@@ -90,7 +90,7 @@ const ModalEdit: React.FC<ModalEditProps> = ({ isOpen, onClose, item, onSave }) 
             <select name="type" value={formData.type || ""} onChange={handleChange}>
               <option value="movie">Película</option>
               <option value="book">Libro</option>
-              <option value="videogame">Videojuego</option>
+              <option value="videoGame">Videojuego</option>
             </select>
           </div>
 
@@ -119,7 +119,7 @@ const ModalEdit: React.FC<ModalEditProps> = ({ isOpen, onClose, item, onSave }) 
             </select>
           </div>
 
-          <button type="submit">Guardar</button>
+          <button className="save-button" type="submit">Guardar</button>
         </form>
         <button onClick={onClose}>Cerrar</button>
       </div>

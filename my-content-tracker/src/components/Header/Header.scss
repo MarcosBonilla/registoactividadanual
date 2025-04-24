@@ -1,38 +1,78 @@
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #333;
-    padding: 1rem;
-    color: white;
-  }
-  
-  .logo h1 {
-    font-size: 1.8rem;
-  }
-  
-  .nav {
-    display: flex;
-    gap: 1rem;
-  }
-  
-  .nav a,
-  .nav button {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    background-color: #555;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  .nav button {
-    background-color: #e74c3c;
-  }
-  
-  .nav a:hover,
-  .nav button:hover {
-    background-color: #f39c12;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0d0d0d;  // Fondo transparente para que no se vea separado
+  padding: 1rem 0;  // No hay margen superior ni inferior, solo un poco de padding
+  color: white;
+  width: 100%;  // Asegura que el header ocupe todo el ancho
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  // Agrega una sombra sutil para dar profundidad
+
+}
+
+.logo h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav button {
+  color: white;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav button:hover {
+  color: #5c6bc0;  // Cambio de color al pasar el mouse
+}
+
+.nav button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 5px #646cff;  // Efecto de foco más accesible
+}
+
+.nav button::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: #5c6bc0;  // Subrayado con el color principal
+  bottom: 0;
+  left: 0;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;  // Transición suave al pasar el mouse
+}
+
+.nav button:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.logout-btn {
+  background-color: #e74c3c;  // Botón de logout con un color diferenciador
+}
+
+.nav button.active {
+  color: #5c6bc0;  // Resaltar el color cuando un botón está activo
+}
+
+.nav button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 5px #646cff;  // Efecto de enfoque visible para accesibilidad
+}
