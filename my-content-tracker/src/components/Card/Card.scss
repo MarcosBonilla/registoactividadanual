@@ -1,96 +1,129 @@
 .card {
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  border: 1px solid #333;
   border-radius: 12px;
-  padding: 1rem;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
+  padding: 20px;
+  margin: 8px;
+  color: #f1f1f1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
   position: relative;
-  transition: transform 0.2s ease;
+
   &:hover {
-    transform: scale(1.01);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  &.movie {
+    border-left: 5px solid #e74c3c;
+  }
+
+  &.book {
+    border-left: 5px solid #3498db;
+  }
+
+  &.videogame {
+    border-left: 5px solid #2ecc71;
   }
 
   h3 {
-    margin-bottom: 0.5rem;
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: #ffffff;
   }
 
   p {
-    margin: 0.2rem 0;
+    font-size: 14px;
+    color: #cccccc;
   }
 
-  textarea {
-    resize: none;
-  }
-}
+  .icons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
 
-.movie {
-  border-left: 4px solid #ff6f61;
-}
+    svg {
+      cursor: pointer;
+      color: #aaa;
+      transition: color 0.2s ease;
 
-.book {
-  border-left: 4px solid #4caf50;
-}
+      &:hover {
+        color: #fff;
+      }
+    }
 
-.videogame {
-  border-left: 4px solid #2196f3;
-}
+    button {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
 
-.icons {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 1.2rem;
-  margin-top: 0.5rem;
-  cursor: pointer;
-  justify-content: flex-end;
-}
-
-.editForm {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  input, textarea, select {
-    padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-
-  textarea {
-    height: 60px;
-  }
-}
-
-.confirmation {
-  margin-top: 0.5rem;
-  background-color: #ffe0e0;
-  padding: 0.5rem;
-  border-radius: 6px;
-  text-align: center;
-
-  button {
-    margin: 0 0.5rem;
-    padding: 0.3rem 0.6rem;
-    border: none;
-    border-radius: 4px;
-    background-color: #d32f2f;
-    color: white;
-    cursor: pointer;
-
-    &:last-child {
-      background-color: #999;
+      &:hover {
+        background-color: #c0392b;
+      }
     }
   }
-}
 
-.actionButtons {
-  display: flex;
-  justify-content: space-between;
+  .confirmation {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+
+    button {
+      background-color: #5c6bc0;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #3f4b92;
+      }
+    }
+  }
+
+  form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"] {
+    padding: 10px;
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+    color: #f1f1f1;
+    border-radius: 5px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+
+    &:focus {
+      border-color: #5c6bc0;
+    }
+  }
 
   button {
-    padding: 0.5rem;
-    background-color: transparent;
+    padding: 10px 20px;
+    background-color: #5c6bc0;
+    color: white;
     border: none;
-    font-size: 1.2rem;
+    border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: #3f4b92;
+    }
   }
 }

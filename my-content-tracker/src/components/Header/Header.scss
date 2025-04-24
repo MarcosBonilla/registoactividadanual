@@ -1,0 +1,38 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 1rem;
+    color: white;
+  }
+  
+  .logo h1 {
+    font-size: 1.8rem;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .nav a,
+  .nav button {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    background-color: #555;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .nav button {
+    background-color: #e74c3c;
+  }
+  
+  .nav a:hover,
+  .nav button:hover {
+    background-color: #f39c12;
+  }
+  

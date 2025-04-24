@@ -1,22 +1,83 @@
-.dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+.add-item-btn {
+  background-color: #5c6bc0;  // Color principal (como el que usaste para otros botones)
+  color: white;
+  border: none;
+  border-radius: 50%;  // Redondeo completo para hacerlo circular
+  padding: 16px;  // Espacio adecuado para el ícono
+  font-size: 24px;  // Tamaño grande para el signo "+"
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  // Sombra sutil para resaltar el botón
   
-  .dashboard-container h1 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-  }
+  position: fixed;
+  bottom: 24px;  // Espaciado desde la parte inferior
+  right: 24px;   // Espaciado desde la parte derecha
+  z-index: 100;  // Asegura que esté por encima de otros elementos
   
-  .card-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    width: 100%;
+  &:hover {
+    background-color: #3f4b92;  // Efecto de hover (oscurece el color)
+    transform: scale(1.1);  // Sutil agrandamiento en hover
   }
-  
+
+  &:focus-visible {
+    outline: 4px solid #646cff;  // Estilo de enfoque para accesibilidad
+  }
+
+  svg {
+    pointer-events: none;  // Asegurarse de que el clic se registre en todo el área del botón
+  }
+}
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.items{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 20px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.filter-container button {
+  padding: 10px 20px;
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+  color: #f1f1f1;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+
+  &:hover {
+    background-color: #3a3a3a;
+    border-color: #666;
+  }
+}
+
+.filter-container button.active {
+  background-color: #5c6bc0;
+  color: white;
+  border-color: #5c6bc0;
+}
+
+

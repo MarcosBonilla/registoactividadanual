@@ -1,69 +1,85 @@
-// src/components/Dashboard/Dashboard.tsx
-import React, { useState } from "react";
-import { supabase } from "../../services/supabaseClient";
-import Card from "../Card/Card"; // Importamos el componente Card
+import React, { useState, useEffect } from "react";
+import "./Dashboard.scss";
+import { FaPlus } from "react-icons/fa";
+import ModalEdit from "../Modal/Modal";
+import Card from "../Card/Card";
+import { supabase } from "../../services/supabaseClient";  // Asegúrate de que tengas configurado Supabase
 
-interface DashboardProps {
-  items: any[];
-}
+const Dashboard: React.FC = () => {
+  const [items, setItems] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentItem, setCurrentItem] = useState<any | null>(null);
 
-const Dashboard: React.FC<DashboardProps> = ({ items }) => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchItems = async () => {
+      const { data, error } = await supabase.from("contents").select("*");
+      if (error) {
+        console.error("Error fetching items:", error);
+      } else {
+        setItems(data);
+      }
+    };
 
-  // Eliminar ítem
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from("contents")
-      .update({ status: 3 })  // Marcamos como eliminado (estado 3)
-      .eq("id", id);
+    fetchItems();
+  }, []);
 
-    if (error) {
-      console.error(error);
-    } else {
-      setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    }
+  const handleSaveItem = (newItem: any) => {
+    setItems((prevItems) => {
+      // Elimina el ítem anterior (el que fue editado) usando el ID original
+      return prevItems
+        .filter((item) => item.id !== currentItem?.id)
+        .concat(newItem); // Agrega el nuevo ítem
+    });
+  };
+  
+
+  const handleOpenModal = (item: any) => {
+    setCurrentItem(item);
+    setIsModalOpen(true);
   };
 
-  // Editar ítem
-  const handleEdit = async (id: string, newData: any) => {
-    const { error } = await supabase
-      .from("contents")
-      .update(newData)
-      .eq("id", id);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setCurrentItem(null);
+  };
 
-    if (error) {
-      console.error(error);
-    } else {
-      setItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === id ? { ...item, ...newData } : item
-        )
-      );
+  const handleDeleteItem = async (id: string) => {
+    try {
+      const { error } = await supabase.from("contents").delete().eq("id", id);
+      if (error) throw error;
+      setItems((prevItems) => prevItems.filter(item => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting item:", error);
     }
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard">
       <h1>Dashboard</h1>
-      <div className="card-container">
-        {loading ? (
-          <p>Cargando...</p>
-        ) : error ? (
-          <p>{error}</p>
-        ) : items.length > 0 ? (
-          items.map((item) => (
-            <Card
-              key={item.id}
-              {...item}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-            />
-          ))
-        ) : (
-          <p>No tienes ítems registrados.</p>
-        )}
+
+      <button className="add-item-btn" onClick={() => {
+        setCurrentItem(null);
+        setIsModalOpen(true);
+      }}>
+        <FaPlus size={24} />
+      </button>
+      <div className="items">
+        {items.map((item) => (
+          <Card
+            key={item.id}
+            {...item}
+            onDelete={handleDeleteItem}
+            onOpenModal={handleOpenModal}
+          />
+        ))}
       </div>
+
+      <ModalEdit
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        item={currentItem}
+        onSave={handleSaveItem}
+      />
     </div>
   );
 };
