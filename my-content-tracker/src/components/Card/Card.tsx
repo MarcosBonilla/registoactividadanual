@@ -16,8 +16,9 @@ interface CardProps {
 
 const typeIcons: Record<string, string> = {
   movie: "🎬",
-  book: "📚",
-  videogame: "🎮",
+  book: "📖",
+  videoGame: "🕹️",
+  tvSerie: "📺",
 };
 
 const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, status, onDelete, onOpenModal }) => {

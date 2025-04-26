@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import "./Header.scss";
 import { supabase } from "../../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 
@@ -13,14 +14,14 @@ const Header = ({ session }: { session: any }) => {
   return (
     <header className="header">
       <div className="logo">
-        <h1>Mi Aplicación</h1>
+        <h1>myStuff</h1>
       </div>
 
       {session ? (
         <nav className="nav">
           <button onClick={() => navigate("/dashboard")}>Dashboard</button>
           <button onClick={() => navigate("/stats")}>Estadísticas</button>
-          <button onClick={() => navigate("/recommendations")}>Recomendaciones</button>
+          <button onClick={() => navigate("/recomendaciones")}>Recomendaciones</button>
           <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>
         </nav>
       ) : (

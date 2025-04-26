@@ -85,7 +85,9 @@ const Dashboard: React.FC = () => {
     { label: "Videojuegos", value: "videoGame" },
     { label: "Películas", value: "movie" },
     { label: "Libros", value: "book" },
+    { label: "Series", value: "tvSerie" },
   ];
+  
 
   const toggleTypeFilter = (value: string) => {
     setActiveType((prev) => (prev === value ? null : value));

@@ -5,6 +5,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import Header from "../components/Header/Header";
+import Recommendations from '../pages/Recommendations';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -54,6 +55,7 @@ export default function AppRouter() {
             <>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="*" element={<Navigate to="/dashboard" />} />
+              <Route path="/recomendaciones" element={<Recommendations />} />
             </>
           )}
         </Routes>

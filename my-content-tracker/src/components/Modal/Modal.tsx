@@ -6,6 +6,7 @@ const statusOptionsByType: Record<string, string[]> = {
   movie: ["vista", "por ver", "viendo"],
   book: ["leído", "por leer", "leyendo"],
   videoGame: ["jugado", "por jugar", "jugando"],
+  tvSerie: ["vista", "por ver", "viendo"],
 };
 
 interface ModalEditProps {
@@ -29,17 +30,14 @@ const ModalEdit: React.FC<ModalEditProps> = ({ isOpen, onClose, item, onSave }) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-  
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
     if (userError || !user) {
       console.error("No se pudo obtener el usuario autenticado.");
       return;
     }
-  
+
     const newItem = {
       title: formData.title,
       type: formData.type,
@@ -47,29 +45,30 @@ const ModalEdit: React.FC<ModalEditProps> = ({ isOpen, onClose, item, onSave }) 
       comment: formData.comment,
       date: formData.date,
       status: formData.status,
-      user_id: user.id, // ✅ esto es clave
+      user_id: user.id,
     };
-  
+
     try {
-      // 1. Eliminar ítem viejo
-      await supabase.from("contents").delete().eq("id", formData.id);
-  
-      // 2. Insertar ítem nuevo (con user_id)
+      // Solo eliminar si el ID existe
+      if (formData.id) {
+        await supabase.from("contents").delete().eq("id", formData.id);
+      }
+
+      // Insertar ítem nuevo
       const { data, error } = await supabase
         .from("contents")
         .insert([newItem])
         .select()
         .single();
-  
+
       if (error) throw error;
-  
+
       onSave(data);
       onClose();
     } catch (error) {
       console.error("Error al guardar el ítem editado:", error);
     }
   };
-  
 
   if (!isOpen) return null;
 
@@ -91,6 +90,7 @@ const ModalEdit: React.FC<ModalEditProps> = ({ isOpen, onClose, item, onSave }) 
               <option value="movie">Película</option>
               <option value="book">Libro</option>
               <option value="videoGame">Videojuego</option>
+              <option value="tvSerie">Serie</option>
             </select>
           </div>
 
