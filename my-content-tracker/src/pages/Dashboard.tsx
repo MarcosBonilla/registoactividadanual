@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import Dashboard from '../components/Dashboard/Dashboard';
@@ -52,12 +52,32 @@ const DashboardPage = () => {
     checkUser();
   }, [navigate]);
 
+  // Manejadores para pasar al componente Dashboard
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from('contents').update({ status: 3 }).eq('id', id);
+      if (error) throw error;
+      setItems((prev) => prev.filter((it) => it.id !== id));
+    } catch (err) {
+      console.error('Error eliminando ítem', err);
+      setError('Error eliminando ítem');
+    }
+  };
+
+  const handleEdit = async (id: string, newData: any) => {
+    try {
+      const { error } = await supabase.from('contents').update(newData).eq('id', id);
+      if (error) throw error;
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...newData } : it)));
+    } catch (err) {
+      console.error('Error editando ítem', err);
+      setError('Error editando ítem');
+    }
+  };
+
   return (
     <div>
-      {loading && <p>Cargando...</p>}
-      {error && <p>{error}</p>}
-      {/* Pasar los datos de los ítems al componente Dashboard */}
-      {!loading && !error && <Dashboard items={items} />}
+      <Dashboard items={items} loading={loading} error={error} onDelete={handleDelete} onEdit={handleEdit} />
     </div>
   );
 };
