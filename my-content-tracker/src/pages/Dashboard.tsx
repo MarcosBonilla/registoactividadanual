@@ -14,9 +14,7 @@ const DashboardPage = () => {
     const checkUser = async () => {
       try {
         // Verificar si el usuario está autenticado
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
           navigate('/');
@@ -39,7 +37,6 @@ const DashboardPage = () => {
           .order('date', { ascending: false });
 
         if (error) throw error;
-        console.log(data); // Mostrar datos para depuración
         setItems(data || []); // Guardar los ítems en el estado
       } catch (error) {
         setError('Error al obtener los contenidos');
@@ -77,7 +74,10 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <Dashboard items={items} loading={loading} error={error} onDelete={handleDelete} onEdit={handleEdit} />
+      {loading && <p>Cargando...</p>}
+      {error && <p>{error}</p>}
+      {/* Pasar los datos de los ítems al componente Dashboard */}
+  {!loading && !error && <Dashboard items={items} />}
     </div>
   );
 };

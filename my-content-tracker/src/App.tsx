@@ -1,18 +1,60 @@
-// App.tsx
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "./services/supabaseClient";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";  // Asume que tienes un componente de Login
+import Header from "./components/Header/Header";
 
-const App = () => {
+export default function AppRouter() {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // getSession returns { data: { session } }
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      // listener is of shape { subscription }
+      try {
+        // safely attempt to unsubscribe if available
+        // @ts-ignore
+        if (listener && listener.subscription && typeof listener.subscription.unsubscribe === 'function') {
+          // @ts-ignore
+          listener.subscription.unsubscribe();
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, []);
+
+  if (loading) return <p>Cargando sesión...</p>;
+
   return (
-    <Router>
+    <BrowserRouter>
+      <Header session={session} /> {/* Pasar la sesión al Header */}
       <Routes>
-        <Route path="/" element={<Login />} />  {/* Ruta para Login */}
-        <Route path="/dashboard" element={<Dashboard />} />  {/* Ruta para el Dashboard */}
+        {!session ? (
+          <>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        ) : (
+          <>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="*" element={<Navigate to="/dashboard" />} />
+          </>
+        )}
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
-};
-
-export default App;
+}

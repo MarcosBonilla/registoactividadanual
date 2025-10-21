@@ -1,13 +1,18 @@
 // components/ui/button.tsx
 import React from "react";
+import './button.css'
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  className?: string;
+};
 
-export const Button: React.FC<ButtonProps> = ({ children, ...props }) => {
+export const Button: React.FC<ButtonProps> = ({ children, className = '', ...props }) => {
+  const base = 'app-button';
+  const classes = `${base} ${className}`.trim();
   return (
     <button
       {...props}
-      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+      className={classes}
     >
       {children}
     </button>

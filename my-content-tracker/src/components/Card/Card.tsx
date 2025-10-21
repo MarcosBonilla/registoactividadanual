@@ -1,118 +1,91 @@
-import React, { useState } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import "./Card.scss";  // Estilos específicos para Card
+import React from "react";
+import { FaEdit, FaTrash, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import './Card.scss';
 
 interface CardProps {
   id: string;
   title: string;
   type: string;
-  rating: number;
-  comment: string;
-  date: string;
-  status: number;
+  rating?: number | null;
+  comment?: string | null;
+  date?: string | null;
+  status?: string | null;
   onDelete: (id: string) => void;
-  onEdit: (id: string, newData: any) => void;
+  onOpenModal: (item: any) => void;  // Función para abrir el modal con los datos
 }
 
-const Card: React.FC<CardProps> = ({
-  id,
-  title,
-  type,
-  rating,
-  comment,
-  date,
-  status,
-  onDelete,
-  onEdit,
-}) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(title);
-  const [editedType, setEditedType] = useState(type);
-  const [editedRating, setEditedRating] = useState(rating);
-  const [editedComment, setEditedComment] = useState(comment);
-  const [editedDate, setEditedDate] = useState(date);
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+const typeIcons: Record<string, string> = {
+  movie: "🎬",
+  book: "📖",
+  videoGame: "🕹️",
+  tvSerie: "📺",
+};
 
-  const handleSave = () => {
-    // Solo actualizamos si hay cambios
-    if (
-      editedTitle !== title ||
-      editedType !== type ||
-      editedRating !== rating ||
-      editedComment !== comment ||
-      editedDate !== date
-    ) {
-      onEdit(id, {
-        title: editedTitle,
-        type: editedType,
-        rating: editedRating,
-        comment: editedComment,
-        date: editedDate,
-        status,
-      });
-    }
-    setIsEditing(false);
-  };
+const categoryLabel = (k: string) => {
+  switch (k) {
+    case 'videoGame': return 'Videojuego';
+    case 'book': return 'Libro';
+    case 'movie': return 'Película';
+    case 'tvSerie': return 'Serie';
+    default: return k;
+  }
+}
 
-  const handleDelete = () => {
-    if (isConfirmingDelete) {
-      onDelete(id);
-    } else {
-      setIsConfirmingDelete(true);
-    }
-  };
+// render stars with half-star support using unicode
+const renderStars = (value?: number | null) => {
+  if (value == null) return null;
+  const v = Math.max(0, Math.min(5, value));
+  const fullCount = Math.floor(v);
+  const frac = v - fullCount;
+  // decide half/full
+  let half = false;
+  let extraFull = 0;
+  if (frac >= 0.75) extraFull = 1;
+  else if (frac >= 0.25) half = true;
+
+  const icons = [] as React.ReactNode[];
+  for (let i = 0; i < fullCount + extraFull; i++) icons.push(<FaStar key={`f${i}`} />);
+  if (half) icons.push(<FaStarHalfAlt key="half" />);
+  while (icons.length < 5) icons.push(<FaRegStar key={`e${icons.length}`} />);
 
   return (
-    <div className="card">
-      {isEditing ? (
-        <form onSubmit={(e) => e.preventDefault()}>
-          <input
-            type="text"
-            value={editedTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
-          />
-          <input
-            type="text"
-            value={editedType}
-            onChange={(e) => setEditedType(e.target.value)}
-          />
-          <input
-            type="number"
-            value={editedRating}
-            onChange={(e) => setEditedRating(Number(e.target.value))}
-          />
-          <input
-            type="text"
-            value={editedComment}
-            onChange={(e) => setEditedComment(e.target.value)}
-          />
-          <input
-            type="date"
-            value={editedDate}
-            onChange={(e) => setEditedDate(e.target.value)}
-          />
-          <button onClick={handleSave}>Save</button>
-        </form>
-      ) : (
-        <div>
-          <h3>{title}</h3>
-          <p>{type}</p>
-          <p>{rating} ⭐</p>
-          <p>{comment}</p>
-          <p>{date}</p>
-        </div>
-      )}
+    <span className="stars" role="img" aria-label={`Puntuación ${v.toFixed(1)} de 5`}>
+      {icons.map((ic, idx) => (
+        <span key={idx} className="star-icon">{ic}</span>
+      ))}
+    </span>
+  );
+}
 
-      <div className="icons">
-        <FaEdit onClick={() => setIsEditing(!isEditing)} />
-        <FaTrash onClick={handleDelete} />
-        {isConfirmingDelete && (
-          <div className="confirmation">
-            <p>¿Estás seguro de eliminar este ítem?</p>
-            <button onClick={handleDelete}>Sí</button>
-            <button onClick={() => setIsConfirmingDelete(false)}>Cancelar</button>
-          </div>
-        )}
+const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, status, onDelete, onOpenModal }) => {
+  const icon = typeIcons[type] || "📦";
+  const typeLabel = categoryLabel(type);
+  const typeClass = type.toLowerCase();
+
+  return (
+    <div className={`card ${typeClass}`}>
+      <div className="card-header">
+        <h3>{icon} {title}</h3>
+        <div className="card-actions">
+          <FaEdit onClick={() => onOpenModal({ id, title, type, rating, comment, date, status })} />
+          <FaTrash onClick={() => onDelete(id)} />
+        </div>
+      </div>
+
+      <div className="card-subtitle">{typeLabel}</div>
+
+  <div className="card-rating">{renderStars(rating)}</div>
+
+      {comment ? <div className="card-comment">{comment}</div> : null}
+
+      <div className="card-footer">
+        <div className="card-date">{date ? (() => {
+          try {
+            const d = new Date(date);
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+          } catch (e) { return date.split('T')[0] }
+        })() : ''}</div>
+        <div className="card-status">{status || ''}</div>
       </div>
     </div>
   );
