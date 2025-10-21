@@ -11,20 +11,27 @@ export default function AppRouter() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentSession = supabase.auth.getSession().then(({ data }) => {
+    // getSession returns { data: { session } }
+    supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
+    }).catch(() => setLoading(false));
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      }
-    );
-
     return () => {
-      if (listener && typeof listener.unsubscribe === "function") {
-        listener.unsubscribe();
+      // listener is of shape { subscription }
+      try {
+        // safely attempt to unsubscribe if available
+        // @ts-ignore
+        if (listener && listener.subscription && typeof listener.subscription.unsubscribe === 'function') {
+          // @ts-ignore
+          listener.subscription.unsubscribe();
+        }
+      } catch (e) {
+        // ignore
       }
     };
   }, []);

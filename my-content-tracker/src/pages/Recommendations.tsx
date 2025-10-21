@@ -1,7 +1,4 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import RecommendationEngine from '../components/Recommendations/RecommendationEngine';
-
 
 const Recommendations = () => {
   return (

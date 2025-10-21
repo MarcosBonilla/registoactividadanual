@@ -34,6 +34,13 @@
         font-weight: bold;
         margin-bottom: 8px;
       }
+
+      .recommended-from {
+        font-size: 0.87rem; /* ligeramente más pequeño */
+        color: rgba(255,255,255,0.7); /* menos blanco */
+        margin-bottom: 6px;
+        font-style: normal;
+      }
   
       .meta {
         font-size: 14px;
@@ -50,6 +57,52 @@
         color: #ffc107;
         font-weight: bold;
       }
+    }
+  }
+
+  .recommendation-card {
+    position: relative;
+
+    .rec-actions {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 5;
+    }
+
+    .rec-add, .rec-discard {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .rec-add {
+      background-color: #5c6bc0;
+    }
+
+    .rec-add:hover {
+      background-color: #3f4b92;
+      transform: scale(1.05);
+    }
+
+    .rec-discard {
+      background-color: #e74c3c;
+    }
+
+    .rec-discard:hover {
+      background-color: #c0392b;
+      transform: scale(1.05);
     }
   }
 

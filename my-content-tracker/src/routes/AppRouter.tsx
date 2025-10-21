@@ -6,6 +6,7 @@ import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import Header from "../components/Header/Header";
 import Recommendations from '../pages/Recommendations';
+import Stats from '../pages/Stats';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -14,7 +15,7 @@ export default function AppRouter() {
     const [loading, setLoading] = useState(true);
   
     useEffect(() => {
-      const currentSession = supabase.auth.getSession().then(({ data }) => {
+      supabase.auth.getSession().then(({ data }) => {
         setSession(data.session);  // Asegúrate de que la sesión se cargue al inicio
         setLoading(false);
       });
@@ -25,8 +26,8 @@ export default function AppRouter() {
       });
   
       return () => {
-        if (listener && typeof listener.unsubscribe === "function") {
-          listener.unsubscribe();
+        if (listener && listener.subscription && typeof listener.subscription.unsubscribe === 'function') {
+          listener.subscription.unsubscribe();
         }
       };
     }, []);
@@ -54,6 +55,7 @@ export default function AppRouter() {
           ) : (
             <>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/stats" element={<Stats />} />
               <Route path="*" element={<Navigate to="/dashboard" />} />
               <Route path="/recomendaciones" element={<Recommendations />} />
             </>

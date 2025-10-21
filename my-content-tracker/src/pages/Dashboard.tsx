@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import Dashboard from '../components/Dashboard/Dashboard';
@@ -54,7 +54,7 @@ const DashboardPage = () => {
       {loading && <p>Cargando...</p>}
       {error && <p>{error}</p>}
       {/* Pasar los datos de los ítems al componente Dashboard */}
-      {!loading && !error && <Dashboard items={items} />}
+  {!loading && !error && <Dashboard items={items} />}
     </div>
   );
 };

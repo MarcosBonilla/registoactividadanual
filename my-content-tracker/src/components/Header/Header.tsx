@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import "./Header.scss";
 import { supabase } from "../../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 const Header = ({ session }: { session: any }) => {
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -17,17 +18,21 @@ const Header = ({ session }: { session: any }) => {
         <h1>myStuff</h1>
       </div>
 
+      <button className="menu-toggle" aria-label="Toggle menu" onClick={() => setOpen((v) => !v)}>
+        ☰
+      </button>
+
       {session ? (
-        <nav className="nav">
-          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate("/stats")}>Estadísticas</button>
-          <button onClick={() => navigate("/recomendaciones")}>Recomendaciones</button>
-          <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>
+        <nav className={`nav ${open ? 'open' : ''}`}>
+          <button onClick={() => { navigate("/dashboard"); setOpen(false) }}>Dashboard</button>
+          <button onClick={() => { navigate("/stats"); setOpen(false) }}>Estadísticas</button>
+          <button onClick={() => { navigate("/recomendaciones"); setOpen(false) }}>Recomendaciones</button>
+          <button className="logout-btn" onClick={() => { handleLogout(); setOpen(false) }}>Cerrar sesión</button>
         </nav>
       ) : (
-        <nav className="nav">
-          <button onClick={() => navigate("/login")}>Iniciar sesión</button>
-          <button onClick={() => navigate("/register")}>Registrarse</button>
+        <nav className={`nav ${open ? 'open' : ''}`}>
+          <button onClick={() => { navigate("/login"); setOpen(false) }}>Iniciar sesión</button>
+          <button onClick={() => { navigate("/register"); setOpen(false) }}>Registrarse</button>
         </nav>
       )}
     </header>

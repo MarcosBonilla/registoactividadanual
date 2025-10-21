@@ -45,7 +45,7 @@
     background-color: #1e1e1e;
     color: white;
     border: 1px solid #444;
-    width: 50%;
+      width: 320px;
 
     &:focus {
       outline: 2px solid #5c6bc0;
@@ -76,6 +76,20 @@
       }
     }
   }
+}
+
+@media (max-width: 720px) {
+  .filters {
+    margin-top: 68px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .filters input { width: 100%; max-width: none }
+  .filters .type-buttons { justify-content: center }
+  .sort-select { margin-left: 0 }
 }
 
 

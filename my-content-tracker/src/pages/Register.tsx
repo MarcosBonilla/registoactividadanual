@@ -1,15 +1,20 @@
 // src/pages/Register.tsx
 import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
+import { useNavigate } from 'react-router-dom'
+import './auth.css'
+import { Button } from '../components/ui/button'
 
 const Register = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
 
     // Validar los campos
     if (!email || !password || !confirmPassword) {
@@ -23,29 +28,29 @@ const Register = () => {
     }
 
     try {
-      const { user, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       })
       if (error) throw error
-      console.log('Usuario registrado:', user)
-      // Redirigir o realizar cualquier otra acción después del registro
-    } catch (error: any) {
-      setError(error.message)
+      console.log('Usuario registrado:', data)
+      // Redirigir al login para que confirme o inicie sesión
+      navigate('/login')
+    } catch (err: any) {
+      setError(err.message || 'Error al registrar')
     }
 
-    // Limpiar campos y error
-    setError('')
+    // Limpiar campos
     setEmail('')
     setPassword('')
     setConfirmPassword('')
   }
 
   return (
-    <div>
-      <h2>Register</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleRegister}>
+    <div className="auth-container">
+      <h2>Crear cuenta</h2>
+      {error && <p className="error-msg">{error}</p>}
+      <form className="auth-form" onSubmit={handleRegister}>
         <div>
           <label htmlFor="email">Email</label>
           <input
@@ -76,7 +81,13 @@ const Register = () => {
             required
           />
         </div>
-        <button type="submit">Register</button>
+
+        <div className="auth-actions">
+          <Button type="submit">Crear cuenta</Button>
+          <Button type="button" className="secondary" onClick={() => navigate('/login')}>
+            Volver a login
+          </Button>
+        </div>
       </form>
     </div>
   )

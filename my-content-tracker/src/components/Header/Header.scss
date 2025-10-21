@@ -75,3 +75,22 @@
   outline: none;
   box-shadow: 0 0 5px #646cff;  // Efecto de enfoque visible para accesibilidad
 }
+
+/* Mobile header behavior */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 8px;
+}
+
+@media (max-width: 720px) {
+  .nav { display: none; position: absolute; right: 12px; top: 64px; background: #0b0b0b; padding: 12px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.4); flex-direction: column; gap:8px }
+  .menu-toggle { display: block }
+  .nav.open { display: flex }
+  .logo h1 { font-size: 1.4rem }
+  .header { padding: 12px 14px }
+}

@@ -5,8 +5,14 @@ import ModalEdit from "../Modal/Modal";
 import Card from "../Card/Card";
 import { supabase } from "../../services/supabaseClient";
 
-const Dashboard: React.FC = () => {
-  const [items, setItems] = useState<any[]>([]);
+type DashboardProps = {
+  items?: any[];
+  onDelete?: (id: string) => void;
+  onOpenModal?: (item: any) => void;
+};
+
+const Dashboard: React.FC<DashboardProps> = ({ items: propItems, onDelete, onOpenModal }) => {
+  const [items, setItems] = useState<any[]>(propItems || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any | null>(null);
 
@@ -15,17 +21,23 @@ const Dashboard: React.FC = () => {
   const [sortOption, setSortOption] = useState<string>("date-desc");  // Estado para ordenar
 
   useEffect(() => {
+    // If parent passed items, prefer those and skip fetching
+    if (propItems) {
+      setItems(propItems);
+      return;
+    }
+
     const fetchItems = async () => {
       const { data, error } = await supabase.from("contents").select("*");
       if (error) {
         console.error("Error fetching items:", error);
       } else {
-        setItems(data);
+        setItems(data || []);
       }
     };
 
     fetchItems();
-  }, []);
+  }, [propItems]);
 
   // Función para ordenar los ítems según el criterio seleccionado
   const sortItems = (items: any[]) => {
@@ -48,14 +60,14 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSaveItem = (newItem: any) => {
-    setItems((prevItems) =>
-      prevItems.filter((item) => item.id !== currentItem?.id).concat(newItem)
-    );
+    setItems((prevItems) => prevItems.filter((item) => item.id !== currentItem?.id).concat(newItem));
   };
 
   const handleOpenModal = (item: any) => {
     setCurrentItem(item);
     setIsModalOpen(true);
+    // notify parent if provided
+    if (onOpenModal) onOpenModal(item);
   };
 
   const handleCloseModal = () => {
@@ -64,6 +76,13 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDeleteItem = async (id: string) => {
+    // if parent provided onDelete, delegate deletion to parent
+    if (onDelete) {
+      onDelete(id);
+      setItems((prev) => prev.filter(i => i.id !== id));
+      return;
+    }
+
     try {
       const { error } = await supabase.from("contents").delete().eq("id", id);
       if (error) throw error;
@@ -144,12 +163,7 @@ const Dashboard: React.FC = () => {
 
       <div className="items">
         {sortItems(filteredItems).map((item) => (
-          <Card
-            key={item.id}
-            {...item}
-            onDelete={handleDeleteItem}
-            onOpenModal={handleOpenModal}
-          />
+          <Card key={item.id} {...item} onDelete={handleDeleteItem} onOpenModal={handleOpenModal} />
         ))}
       </div>
 
