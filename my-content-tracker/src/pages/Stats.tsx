@@ -122,7 +122,7 @@ const StatsPage: React.FC = () => {
         <>
           <div className="stats-grid">
             <div className="stat-card">
-                <h3>Total content</h3>
+                <h3>Contenido total</h3>
                 <p className="big">{totalItems}</p>
               </div>
 

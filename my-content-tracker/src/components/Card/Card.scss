@@ -36,41 +36,30 @@
     color: #ffffff;
   }
 
-  p {
-    font-size: 14px;
-    color: #cccccc;
+  .card-subtitle {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    margin-top: 6px;
   }
 
-  .icons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+  .card-rating {
     margin-top: 10px;
-
-    svg {
-      cursor: pointer;
-      color: #aaa;
-      transition: color 0.2s ease;
-
-      &:hover {
-        color: #fff;
-      }
-    }
-
-    button {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-
-      &:hover {
-        background-color: #c0392b;
-      }
-    }
+    display:flex;
+    align-items:center;
+    gap:8px;
   }
+
+  .stars { color: #ffd166; font-size: 1.05rem; display:flex; gap:6px; align-items:center }
+  .star-icon { display:inline-flex; align-items:center }
+  .star-icon svg { color: #ffd166 }
+  .rating-num { color:#9fb0d9; font-size:0.9rem }
+
+  .card-comment { margin-top: 12px; color:#e6eef8 }
+
+  .card-header { display:flex; justify-content:space-between; align-items:center }
+
+  .card-actions { display:flex; gap:8px; align-items:center }
+
 
   .confirmation {
     margin-top: 10px;
@@ -130,4 +119,16 @@
       background-color: #3f4b92;
     }
   }
+
+  .card-footer {
+    margin-top: 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#9fb0d9;
+    font-size:0.85rem;
+  }
+
+  .card-date { color:#9fb0d9; font-size:0.8rem }
+  .card-status { font-weight:600; color:#dbeafe }
 }
