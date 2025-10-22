@@ -1,4 +1,3 @@
-// src/services/auth.ts
 
 import { supabase } from './supabaseClient'
 

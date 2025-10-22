@@ -101,10 +101,9 @@ const StatsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalItem, setModalItem] = useState<any>(null);
 
-  // Monthly counts from date field (assumes date in ISO yyyy-mm-dd)
   const monthlyCounts = contents.reduce((acc: Record<string, number>, item) => {
     if (!item.date) return acc;
-    const month = item.date.slice(0, 7); // YYYY-MM
+    const month = item.date.slice(0, 7); 
     acc[month] = (acc[month] || 0) + 1;
     return acc;
   }, {});
@@ -187,7 +186,6 @@ const StatsPage: React.FC = () => {
             </div>
           </div>
           <ModalEdit isOpen={isModalOpen} item={modalItem} onClose={() => setIsModalOpen(false)} onSave={(newItem) => {
-            // refrescar localmente: reemplazar o añadir
             setContents(prev => {
               const exists = prev.find(p => p.id === newItem.id);
               if (exists) return prev.map(p => p.id === newItem.id ? newItem : p);
@@ -226,7 +224,6 @@ const StatsPage: React.FC = () => {
                         {
                           label: 'Ítems',
                           data: months.map(m => monthlyCounts[m]),
-                          // gradient is scriptable so it renders once chart area exists
                           backgroundColor: (context: any) => {
                             const chart = context.chart;
                             const { ctx, chartArea } = chart;

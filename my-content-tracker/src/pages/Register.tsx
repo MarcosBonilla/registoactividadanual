@@ -1,4 +1,3 @@
-// src/pages/Register.tsx
 import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { useNavigate } from 'react-router-dom'
@@ -16,7 +15,6 @@ const Register = () => {
     e.preventDefault()
     setError('')
 
-    // Validar los campos
     if (!email || !password || !confirmPassword) {
       setError('Por favor, ingrese todos los campos')
       return
@@ -34,13 +32,11 @@ const Register = () => {
       })
       if (error) throw error
       console.log('Usuario registrado:', data)
-      // Redirigir al login para que confirme o inicie sesión
       navigate('/login')
     } catch (err: any) {
       setError(err.message || 'Error al registrar')
     }
 
-    // Limpiar campos
     setEmail('')
     setPassword('')
     setConfirmPassword('')

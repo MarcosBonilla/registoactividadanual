@@ -1,4 +1,3 @@
-// src/pages/DashboardPage.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
@@ -13,13 +12,11 @@ const DashboardPage = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // Verificar si el usuario está autenticado
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
           navigate('/');
         } else {
-          // Si está autenticado, obtener los datos
           await fetchItems(user.id);
         }
       } catch (error) {
@@ -33,11 +30,11 @@ const DashboardPage = () => {
         const { data, error } = await supabase
           .from('contents')
           .select('*')
-          .eq('user_id', userId) // Asegúrate de usar userId aquí
+          .eq('user_id', userId)
           .order('date', { ascending: false });
 
         if (error) throw error;
-        setItems(data || []); // Guardar los ítems en el estado
+        setItems(data || []);
       } catch (error) {
         setError('Error al obtener los contenidos');
         console.error(error);
@@ -53,7 +50,7 @@ const DashboardPage = () => {
     <div>
       {loading && <p>Cargando...</p>}
       {error && <p>{error}</p>}
-      {/* Pasar los datos de los ítems al componente Dashboard */}
+      {}
   {!loading && !error && <Dashboard items={items} />}
     </div>
   );

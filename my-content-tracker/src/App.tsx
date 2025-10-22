@@ -11,7 +11,6 @@ export default function AppRouter() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // getSession returns { data: { session } }
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
@@ -22,16 +21,11 @@ export default function AppRouter() {
     });
 
     return () => {
-      // listener is of shape { subscription }
       try {
-        // safely attempt to unsubscribe if available
-        // @ts-ignore
         if (listener && listener.subscription && typeof listener.subscription.unsubscribe === 'function') {
-          // @ts-ignore
           listener.subscription.unsubscribe();
         }
       } catch (e) {
-        // ignore
       }
     };
   }, []);
@@ -40,7 +34,7 @@ export default function AppRouter() {
 
   return (
     <BrowserRouter>
-      <Header session={session} /> {/* Pasar la sesión al Header */}
+      <Header session={session} /> {}
       <Routes>
         {!session ? (
           <>

@@ -17,7 +17,6 @@
 .auth-actions .btn { flex:1; min-width: 120px }
 .auth-actions .btn.secondary { margin-left:12px; flex:1; min-width:120px }
 
-/* prevent inputs from overflowing the container on very small screens */
 @media (max-width: 520px) {
   .auth-container { margin: 20px; padding: 18px }
   .auth-form input { max-width: 100% }

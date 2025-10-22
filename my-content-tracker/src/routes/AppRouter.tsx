@@ -16,13 +16,12 @@ export default function AppRouter() {
   
     useEffect(() => {
       supabase.auth.getSession().then(({ data }) => {
-        setSession(data.session);  // Asegúrate de que la sesión se cargue al inicio
+        setSession(data.session); 
         setLoading(false);
       });
   
-      // Listener para cambios en la autenticación
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-        setSession(session);  // Actualiza la sesión cuando cambia
+        setSession(session);  
       });
   
       return () => {
@@ -36,7 +35,7 @@ export default function AppRouter() {
   
     return (
       <BrowserRouter>
-        <Header session={session} />  {/* Pasar la sesión al Header */}
+        <Header session={session} />  {}
         <ToastContainer
         position="top-right"
         autoClose={3000}

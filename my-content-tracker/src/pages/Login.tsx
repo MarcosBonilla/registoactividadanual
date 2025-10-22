@@ -1,7 +1,7 @@
 // src/pages/Login.tsx
 import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
-import { useNavigate } from "react-router-dom"; // Cambiado a react-router-dom
+import { useNavigate } from "react-router-dom"; 
 import './auth.css'
 import { Button } from '../components/ui/button'
 
@@ -9,7 +9,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate(); // Usamos useNavigate para redirigir
+  const navigate = useNavigate(); 
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -24,7 +24,7 @@ const Login = () => {
       if (error) {
         setError(error.message)
       } else {
-        navigate("/dashboard"); // Redirige al dashboard después del login
+        navigate("/dashboard"); 
       }
     } catch (err: any) {
       console.error("Error during login:", err);
