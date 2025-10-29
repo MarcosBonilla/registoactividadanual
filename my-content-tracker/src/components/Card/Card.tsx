@@ -9,6 +9,9 @@ interface CardProps {
   rating?: number | null;
   comment?: string | null;
   date?: string | null;
+  duration_minutes?: number | null;
+  cover_url?: string | null;
+  coverUrl?: string | null;
   status?: string | null;
   onDelete: (id: string) => void;
   onOpenModal: (item: any) => void;  // Función para abrir el modal con los datos
@@ -57,26 +60,36 @@ const renderStars = (value?: number | null) => {
   );
 }
 
-const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, status, onDelete, onOpenModal }) => {
+const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, duration_minutes, cover_url, coverUrl, status, onDelete, onOpenModal }) => {
   const icon = typeIcons[type] || "📦";
   const typeLabel = categoryLabel(type);
   const typeClass = type.toLowerCase();
+  const cover = (coverUrl || (cover_url as any) || undefined) as string | undefined;
 
   return (
     <div className={`card ${typeClass}`}>
-      <div className="card-header">
-        <h3>{icon} {title}</h3>
-        <div className="card-actions">
-          <FaEdit onClick={() => onOpenModal({ id, title, type, rating, comment, date, status })} />
-          <FaTrash onClick={() => onDelete(id)} />
+      <div className="card-top">
+        {cover ? (
+          <div className="card-media">
+            <img src={cover} alt={title} />
+          </div>
+        ) : null}
+        <div className="card-main">
+          <div className="card-header">
+            <h3>{icon} {title}</h3>
+            <div className="card-actions">
+              <FaEdit onClick={() => onOpenModal({ id, title, type, rating, comment, date, duration_minutes, cover_url: cover || null, coverUrl: cover || null, status })} />
+              <FaTrash onClick={() => onDelete(id)} />
+            </div>
+          </div>
+
+          <div className="card-subtitle">{typeLabel}</div>
+
+          <div className="card-rating">{renderStars(rating)}</div>
+
+          {comment ? <div className="card-comment">{comment}</div> : null}
         </div>
       </div>
-
-      <div className="card-subtitle">{typeLabel}</div>
-
-  <div className="card-rating">{renderStars(rating)}</div>
-
-      {comment ? <div className="card-comment">{comment}</div> : null}
 
       <div className="card-footer">
         <div className="card-date">{date ? (() => {
@@ -85,6 +98,7 @@ const Card: React.FC<CardProps> = ({ id, title, type, rating, comment, date, sta
             return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
           } catch (e) { return date.split('T')[0] }
         })() : ''}</div>
+        <div className="card-duration">{duration_minutes != null ? `${(duration_minutes/60).toFixed(1)} h` : ''}</div>
         <div className="card-status">{status || ''}</div>
       </div>
     </div>

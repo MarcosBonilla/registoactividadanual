@@ -15,6 +15,7 @@ type Content = {
   rating?: number | null;
   date?: string | null;
   coverUrl?: string | null;
+  duration_minutes?: number | null;
 };
 
 const StatsPage: React.FC = () => {
@@ -101,6 +102,20 @@ const StatsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalItem, setModalItem] = useState<any>(null);
 
+  // Duration / hours metrics
+  const totalMinutes = contents.reduce((sum, it) => sum + (it.duration_minutes || 0), 0);
+  const totalHours = +(totalMinutes / 60).toFixed(1);
+
+  const hoursByType = contents.reduce((acc: Record<string, number>, it) => {
+    acc[it.type] = (acc[it.type] || 0) + (it.duration_minutes || 0);
+    return acc;
+  }, {});
+
+  const topByDuration = contents
+    .filter(c => c.duration_minutes != null)
+    .sort((a, b) => (b.duration_minutes! - a.duration_minutes!))
+    .slice(0, 10);
+
   const monthlyCounts = contents.reduce((acc: Record<string, number>, item) => {
     if (!item.date) return acc;
     const month = item.date.slice(0, 7); 
@@ -112,7 +127,6 @@ const StatsPage: React.FC = () => {
 
   return (
     <div className="stats-page">
-      <h1>Estadísticas</h1>
       {loading ? (
         <p>Cargando...</p>
       ) : error ? (
@@ -126,15 +140,65 @@ const StatsPage: React.FC = () => {
               </div>
 
             <div className="stat-card">
+                <h3>Horas totales consumidas</h3>
+                <p className="big">{totalHours} h</p>
+              </div>
+
+            <div className="stat-card">
               <h3>Por categoría</h3>
-              <ul style={{ margin: 0, paddingLeft: 16 }}>
+              <ul className="counts-list" style={{ margin: 0, paddingLeft: 16 }}>
                 {Object.entries(countsByType).map(([k, v]) => (
                   <li key={k}>{categoryLabel(k)}: {v}</li>
                 ))}
               </ul>
             </div>
+          </div>
+          <ModalEdit isOpen={isModalOpen} item={modalItem} onClose={() => setIsModalOpen(false)} onSave={(newItem) => {
+            setContents(prev => {
+              const exists = prev.find(p => p.id === newItem.id);
+              if (exists) return prev.map(p => p.id === newItem.id ? newItem : p);
+              return [...prev, newItem];
+            });
+            setIsModalOpen(false);
+          }} />
 
-            <div className="stat-card">
+          {/* Horas por categoría y top por duración */}
+          <div className="stats-grid hours-row">
+            <div className="stat-card hours-card">
+              <h3>Horas por categoría</h3>
+              <div className="hours-chart">
+                <Bar
+                  data={{
+                    labels: Object.keys(hoursByType).map(k => categoryLabel(k)),
+                    datasets: [
+                      {
+                        label: 'Horas',
+                        data: Object.keys(hoursByType).map(k => +(hoursByType[k] / 60).toFixed(1)),
+                        backgroundColor: (ctx: any) => {
+                          const chart = ctx.chart;
+                          const { ctx: c, chartArea } = chart;
+                          if (!chartArea) return '#60a5fa';
+                          const grad = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                          grad.addColorStop(0, 'rgba(99,102,241,0.95)');
+                          grad.addColorStop(1, 'rgba(99,102,241,0.5)');
+                          return grad;
+                        },
+                        borderRadius: 6,
+                        maxBarThickness: 28,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx: any) => `${ctx.dataset.label || ''}: ${ctx.parsed.y ?? ctx.parsed} h` } } },
+                    scales: { x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }, y: { ticks: { color: '#cbd5e1' }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } } },
+                  }}
+                  />
+              </div>
+            </div>
+
+            <div className="stat-card avg-card">
               <h3>Promedio rating por categoría</h3>
               {Object.keys(avgRatingByType).length === 0 ? (
                 <p>No hay ratings</p>
@@ -185,31 +249,49 @@ const StatsPage: React.FC = () => {
               )}
             </div>
           </div>
-          <ModalEdit isOpen={isModalOpen} item={modalItem} onClose={() => setIsModalOpen(false)} onSave={(newItem) => {
-            setContents(prev => {
-              const exists = prev.find(p => p.id === newItem.id);
-              if (exists) return prev.map(p => p.id === newItem.id ? newItem : p);
-              return [...prev, newItem];
-            });
-            setIsModalOpen(false);
-          }} />
 
-          <div className="tops-row">
-            <h2>Top items por rating</h2>
+          <div className="stats-grid pair-row" style={{ marginTop: 16 }}>
+            <div className="stat-card duration-card">
+              <h3>Top items por horas</h3>
+              {topByDuration.length === 0 ? <p>No hay duraciones registradas.</p> : (
+                <div className="top-duration-list">
+                  {topByDuration.map(t => {
+                    const cover = (t as any).coverUrl || (t as any).cover_url || null;
+                    return (
+                      <div key={t.id} className="top-card top-item-duration">
+                        <div className="top-cover">{cover ? <img src={cover} alt={t.title} /> : 'No cover'}</div>
+                        <div className="top-info">
+                          <div className="top-title">{t.title}</div>
+                          <div className="top-meta">{categoryLabel(t.type)}</div>
+                        </div>
+                        <div className="top-rating">{((t.duration_minutes || 0) / 60).toFixed(1)} h</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="stat-card rating-card">
+              <h3>Top items por rating</h3>
               {topByRating.length === 0 ? <p>No hay items con rating.</p> : (
-              <div>
-                {topByRating.map((t) => (
-                  <div key={t.id} className="top-card" onClick={() => { setModalItem(t); setIsModalOpen(true); }} style={{ cursor: 'pointer' }}>
-                    <div className="top-cover">{t.coverUrl ? <img src={t.coverUrl} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} /> : 'No cover'}</div>
-                    <div className="top-info">
-                      <div className="top-title">{t.title}</div>
-                      <div className="top-meta">{categoryLabel(t.type)}</div>
-                    </div>
-                    <div className="top-rating">{t.rating}⭐</div>
-                  </div>
-                ))}
-              </div>
-            )}
+                <div className="top-list">
+                  {topByRating.map((t) => {
+                    const cover = (t as any).coverUrl || (t as any).cover_url || null;
+                    return (
+                      <div key={t.id} className="top-card top-item" onClick={() => { setModalItem(t); setIsModalOpen(true); }}>
+                        <div className="top-cover">{cover ? <img src={cover} alt={t.title} /> : 'No cover'}</div>
+                        <div className="top-info">
+                          <div className="top-title">{t.title}</div>
+                          <div className="top-meta">{categoryLabel(t.type)}</div>
+                        </div>
+                        <div className="top-rating">{t.rating}⭐</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="consumption">

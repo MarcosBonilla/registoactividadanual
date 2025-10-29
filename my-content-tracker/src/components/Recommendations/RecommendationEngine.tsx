@@ -135,7 +135,8 @@ const RecommendationEngine = () => {
       .from("contents")
       .select("*")
       .eq("user_id", session.user.id)
-      .gte("rating", 3.5)
+      // take any item that has a rating (not null) so we can use all rated items as seeds
+  .gte("rating", 3.5)
       .order("rating", { ascending: false });
 
     if (error) {
@@ -170,12 +171,16 @@ const RecommendationEngine = () => {
       const recData = await recRes.json();
       console.log("Recomendaciones de película:", recData);
 
-      return recData.results.slice(0, 5).map((item: any) => ({
+      return recData.results.slice(0, 20).map((item: any) => ({
         title: item.title,
         type: "movie",
-        rating: undefined,
+        // Map TMDb vote_average (0-10) to a 0-5 scale for our UI
+        rating: item.vote_average ? Math.round((item.vote_average / 2) * 10) / 10 : undefined,
         source: "TMDb",
-        coverUrl: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
+        tmdbId: item.id,
+        overview: item.overview,
+        releaseDate: item.release_date,
+        coverUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : undefined,
       }));
     } catch (err) {
       console.error("Error buscando recomendaciones en TMDb:", err);
@@ -219,11 +224,16 @@ const RecommendationEngine = () => {
       const recData = await recRes.json();
   
       // 5. Devolver resultados formateados — limitamos a 10 para evitar saturar la UI
-      const mapped = (recData.results || []).slice(0, 10).map((item: any) => ({
+      const mapped = (recData.results || []).slice(0, 20).map((item: any) => ({
         title: item.name,
         type: "videoGame",
         rating: item.rating,
         source: "RAWG",
+        rawgId: item.id,
+        slug: item.slug,
+        playtime: item.playtime,
+        metacritic: item.metacritic,
+        released: item.released,
         coverUrl: item.background_image,
       }));
 
@@ -268,11 +278,14 @@ const RecommendationEngine = () => {
       const recData = await recRes.json();
       console.log("Recomendaciones de series:", recData);
   
-      return recData.results.slice(0, 5).map((item: any) => ({
+      return recData.results.slice(0, 20).map((item: any) => ({
         title: item.name,
         type: "tvSerie",
-        rating: undefined,
+        rating: item.vote_average ? Math.round((item.vote_average / 2) * 10) / 10 : undefined,
         source: "TMDb",
+        tmdbId: item.id,
+        overview: item.overview,
+        firstAirDate: item.first_air_date,
         coverUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : undefined,
       }));
     } catch (err) {
@@ -311,12 +324,13 @@ const RecommendationEngine = () => {
       // 4. Filtrar y mapear resultados
       return recData.docs
         .filter((item: any) => item.title !== book.title) // Evitar duplicado exacto
-        .slice(0, 5) // Limitar
+        .slice(0, 20) // Limitar — aumentar candidatos
         .map((item: any) => ({
           title: item.title,
           type: "book",
           rating: undefined,
           source: "OpenLibrary",
+          workKey: item.key,
           coverUrl: item.cover_i ? `https://covers.openlibrary.org/b/id/${item.cover_i}-L.jpg` : undefined,
         }));
     } catch (err) {
@@ -332,9 +346,11 @@ const RecommendationEngine = () => {
     const filteredItems = items.filter((item) => item.type === selectedType);
     console.log("Ítems filtrados:", filteredItems);
   
+    // To diversify recommendations, take multiple seeds and request a small number of candidates per seed
+    const perSeed = 4; // number of recs to keep per rated item
     const recommendationPromises = filteredItems.map((item) => {
       const attachOrigin = (recs: Recommendation[]) =>
-        recs.map((r) => ({ ...r, recommendedFromTitle: item.title, recommendedFromRating: item.rating ?? null, recommendedFromType: item.type }));
+        recs.slice(0, perSeed).map((r) => ({ ...r, recommendedFromTitle: item.title, recommendedFromRating: item.rating ?? null, recommendedFromType: item.type }));
 
       if (item.type === "movie") {
         return fetchMovieRecommendations(item.title).then(attachOrigin);
@@ -350,40 +366,54 @@ const RecommendationEngine = () => {
     });
   
     try {
-      const allRecsNested = await Promise.all(recommendationPromises);
-      const allRecs = allRecsNested.flat();
+        const allRecsNested = await Promise.all(recommendationPromises);
 
-      console.log("Todas las recomendaciones (sin dedupe): count=", allRecs.length, allRecs.slice(0,5));
+        // allRecsNested is an array of arrays, one per seed. We'll interleave items from each seed
+        // to ensure diversity across seeds instead of showing many items from few seeds.
+    const seedLists: Recommendation[][] = allRecsNested.map((arr: Recommendation[] | any) => arr || []);
 
-      // Eliminar duplicados por título + tipo
-      const seen = new Set();
-      const uniqueRecs = allRecs.filter((rec) => {
-        const key = `${rec.title}-${rec.type}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+        // Logging counts
+        const totalCandidates = seedLists.reduce((s, a) => s + a.length, 0);
+        console.log("Total candidate recs (per seed lists):", totalCandidates, "seeds:", seedLists.length);
 
-      console.log("Recomendaciones únicas: count=", uniqueRecs.length, uniqueRecs.slice(0,5));
+        const seen = new Set<string>();
+        const interleaved: Recommendation[] = [];
+        const displayCount = 20;
 
-      // Filtrar recomendaciones descartadas y las que ya existen en el dashboard (por similitud)
-      const filtered = uniqueRecs.filter((rec) => {
-        const isDiscarded = discarded.some((d) => d.title === rec.title && d.type === rec.type);
-        if (isDiscarded) return false;
-        // si alguno de los títulos existentes es similar al rec.title, filtrar
-        const exists = existingTitles.some((t) => isSimilar(t, rec.title));
-        if (exists) return false;
-        return true;
-      });
+        // Round-robin across seeds
+        let added = 0;
+        let round = 0;
+        while (added < displayCount) {
+          let any = false;
+          for (let i = 0; i < seedLists.length && added < displayCount; i++) {
+            const list = seedLists[i];
+            if (round < list.length) {
+              const candidate = list[round];
+              if (!candidate) continue;
+              const key = `${candidate.title}-${candidate.type}`;
+              if (!seen.has(key)) {
+                // filter discarded/existing
+                const isDiscarded = discarded.some((d) => d.title === candidate.title && d.type === candidate.type);
+                const exists = existingTitles.some((t) => isSimilar(t, candidate.title));
+                if (!isDiscarded && !exists) {
+                  interleaved.push(candidate);
+                  seen.add(key);
+                  added++;
+                }
+              }
+              any = true;
+            }
+          }
+          if (!any) break; // no more candidates
+          round++;
+        }
 
-      console.log("Recomendaciones después de filtrar descartadas/existentes: count=", filtered.length, filtered.slice(0,5));
+        console.log("Interleaved recommendations selected:", interleaved.length);
 
-      // Mantener un buffer: los primeros 6 se muestran, el resto se quedan en buffer para reponer
-      const displayCount = 6;
-      const display = filtered.slice(0, displayCount);
-      const buffer = filtered.slice(displayCount);
-      setRecommendations(display);
-      setBufferRecs(buffer);
+        const display = interleaved;
+    const buffer: Recommendation[] = []; // for now, no additional buffer beyond display
+        setRecommendations(display);
+        setBufferRecs(buffer);
     } catch (error) {
       console.error("Error al obtener recomendaciones:", error);
     }
@@ -401,11 +431,34 @@ const RecommendationEngine = () => {
   };
 
   // Agregar recomendación a contenidos (insert minimal record)
-  const handleAddRecommendation = async (rec: { title: string; type: string; source: string; coverUrl?: string }) => {
-    // Abrir modal prellenado con title y type para permitir editar antes de guardar
-    // No incluir coverUrl en el payload que se guardará en DB
-    const suggestedRating = (rec as any).rating ?? 3.5;
-    setModalItem({ title: rec.title, type: rec.type, rating: suggestedRating, date: new Date().toISOString().split('T')[0] });
+  const handleAddRecommendation = async (rec: any) => {
+    // Abrir modal prellenado con title, type y posibles ids externos/cover/duration
+    const suggestedRating = rec.rating ?? 3.5;
+    const modalPayload: any = {
+      title: rec.title,
+      type: rec.type,
+      rating: suggestedRating,
+      date: new Date().toISOString().split('T')[0],
+    };
+
+    // If recommendation includes external identifiers or metadata, pass them to modal so they can be saved immediately
+    if (rec.tmdbId) {
+      modalPayload.external_provider = 'tmdb';
+      modalPayload.external_id = String(rec.tmdbId);
+    }
+    if (rec.rawgId) {
+      modalPayload.external_provider = 'rawg';
+      modalPayload.external_id = String(rec.rawgId);
+    }
+    if (rec.workKey) {
+      modalPayload.external_provider = 'openlibrary';
+      modalPayload.external_id = rec.workKey;
+    }
+    if (rec.coverUrl) modalPayload.cover_url = rec.coverUrl;
+    if (rec.playtime) modalPayload.duration_minutes = Math.round(rec.playtime * 60);
+    if (rec.metacritic) modalPayload.metacritic = rec.metacritic;
+
+    setModalItem(modalPayload);
     setIsModalOpen(true);
   };
 
