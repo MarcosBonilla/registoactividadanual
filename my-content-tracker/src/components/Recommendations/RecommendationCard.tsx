@@ -8,7 +8,15 @@ type RecommendationCardProps = {
   rating?: number;
   source: string;
   coverUrl?: string;
-  onAdd?: (rec: { title: string; type: string; source: string; coverUrl?: string }) => void;
+  // allow passing external ids/providers when available
+  tmdbId?: number;
+  rawgId?: number;
+  workKey?: string;
+  externalProvider?: string;
+  externalId?: string;
+  durationMinutes?: number;
+  metacritic?: number;
+  onAdd?: (rec: any) => void;
   onDiscard?: (rec: { title: string; type: string }) => void;
   recommendedFromTitle?: string;
   recommendedFromRating?: number | null;
@@ -21,6 +29,13 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   rating,
   source,
   coverUrl,
+  tmdbId,
+  rawgId,
+  workKey,
+  externalProvider,
+  externalId,
+  durationMinutes,
+  metacritic,
   onAdd,
   onDiscard,
   recommendedFromTitle,
@@ -30,7 +45,27 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   return (
     <div className="recommendation-card">
       <div className="rec-actions">
-        <button className="rec-add" onClick={() => onAdd && onAdd({ title, type, source, coverUrl })}>+</button>
+        <button
+          className="rec-add"
+          onClick={() =>
+            onAdd &&
+            onAdd({
+              title,
+              type,
+              source,
+              coverUrl,
+              tmdbId,
+              rawgId,
+              workKey,
+              externalProvider,
+              externalId,
+              durationMinutes,
+              metacritic,
+            })
+          }
+        >
+          +
+        </button>
         <button className="rec-discard" onClick={() => onDiscard && onDiscard({ title, type })}>×</button>
       </div>
       {coverUrl && (
